@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>철도 위험기상 모니터링</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  >
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="brand">
+        <div class="brand-title-row">
+          <span class="brand-icon" aria-hidden="true">🚄</span>
+          <h1>철도 위험기상 모니터링</h1>
+          <span class="badge-dummy">더미데이터 · 실제 운행 및 특보 아님</span>
+        </div>
+      </div>
+
+      <div class="top-metrics" aria-live="polite">
+        <div class="metric-pill">
+          <span class="metric-label">전체</span>
+          <strong id="metric-total">-</strong>
+        </div>
+        <div class="metric-pill metric-ok">
+          <span class="metric-label">정상</span>
+          <strong id="metric-ok">-</strong>
+        </div>
+        <div class="metric-pill metric-warn" id="metric-warn-pill">
+          <span class="metric-label">경고</span>
+          <strong id="metric-warn">-</strong>
+        </div>
+        <span class="clock-text" id="rw-time">--:--:--</span>
+        <button
+          type="button"
+          id="btn-drawer-toggle"
+          class="btn-drawer-toggle"
+          aria-expanded="false"
+          aria-controls="rw-panel"
+        >
+          모니터링 패널
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="map-stage" aria-label="철도 및 기상 지도">
+        <div id="map"></div>
+        <div id="loading-overlay" class="loading-overlay">
+          <div class="spinner"></div>
+          <span>철도 노선 및 기상 데이터 불러오는 중...</span>
+        </div>
+      </section>
+
+      <aside id="rw-panel" class="side-panel" aria-label="모니터링 제어 및 현황">
+        <button type="button" id="sheet-handle" class="sheet-handle" aria-label="패널 열기/닫기">
+          <span class="handle-bar"></span>
+          <span class="handle-label">운행 현황 및 제어</span>
+        </button>
+
+        <div class="panel-scroll">
+          <section class="panel-card">
+            <div class="card-header">
+              <h2>시뮬레이션 제어</h2>
+              <span class="sim-badge" id="sim-state-badge">연속 운행 중</span>
+            </div>
+            <div class="controls-grid">
+              <button type="button" id="rw-toggle" class="btn btn-primary">이동 정지</button>
+              <button type="button" id="rw-refresh" class="btn btn-secondary">위험구역 재생성</button>
+            </div>
+            <div class="speed-row">
+              <span class="speed-label">시뮬레이션 배속</span>
+              <div class="speed-buttons" role="group" aria-label="시뮬레이션 속도">
+                <button type="button" class="btn-speed" data-speed="0.5">0.5x</button>
+                <button type="button" class="btn-speed active" data-speed="1">1x</button>
+                <button type="button" class="btn-speed" data-speed="2">2x</button>
+                <button type="button" class="btn-speed" data-speed="4">4x</button>
+              </div>
+            </div>
+            <p class="summary-line" id="rw-summary">데이터 준비 중...</p>
+          </section>
+
+          <section class="panel-card">
+            <div class="card-header">
+              <h2>열차 운행 현황</h2>
+              <button type="button" id="btn-unfollow" class="btn-link hidden">추적 해제</button>
+            </div>
+            <p class="hint-text">열차를 클릭하면 해당 위치로 이동해 추적합니다.</p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>열차</th>
+                    <th>진행</th>
+                    <th>상태 / 위험기상</th>
+                  </tr>
+                </thead>
+                <tbody id="rw-rows"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel-card">
+            <h2>범례</h2>
+            <div class="legend-grid">
+              <div class="legend-item"><span class="line-swatch"></span> 철도 경로</div>
+              <div class="legend-item"><span class="box-swatch single"></span> 단일 영향 범위 (5km)</div>
+              <div class="legend-item"><span class="box-swatch overlap"></span> 중복 영향 범위</div>
+              <div class="legend-item"><span>🚆 정상 운행</span></div>
+              <div class="legend-item"><span>⚠️ 위험구역 진입</span></div>
+              <div class="legend-item"><span class="ring-swatch snow"></span> 대설 위험구역</div>
+              <div class="legend-item"><span class="ring-swatch rain"></span> 호우 위험구역</div>
+              <div class="legend-item"><span class="ring-swatch wind"></span> 강풍 위험구역</div>
+            </div>
+
+            <h3>시간당 강수량 (mm/h)</h3>
+            <div id="rw-rain-legend" class="rain-legend"></div>
+          </section>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
